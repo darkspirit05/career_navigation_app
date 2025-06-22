@@ -9,9 +9,9 @@ import '../../utils/ai_engine.dart';
 import '../../core/constants.dart';
 
 class ResultScreen extends StatefulWidget {
-  final Map<int, String> answers;
+  final Map<int, String>? answers;
 
-  const ResultScreen({super.key, required this.answers});
+  const ResultScreen({super.key, this.answers});
 
   @override
   State<ResultScreen> createState() => _ResultScreenState();
@@ -21,34 +21,84 @@ class _ResultScreenState extends State<ResultScreen> {
   final supabase = Supabase.instance.client;
 
   List<String> careers = [];
-  late DateTime timestamp;
+  DateTime timestamp = DateTime.now(); // ✅ initialized to avoid LateError
+  late Map<int, String> finalAnswers;
+
   bool isLoading = true;
+  bool _initialized = false;
+
+  Map<int, String> castAnswers(dynamic input) {
+    if (input is Map) {
+      return Map<int, String>.fromEntries(
+        input.entries.map((entry) {
+          final key = int.tryParse(entry.key.toString());
+          if (key != null) {
+            return MapEntry(key, entry.value.toString());
+          } else {
+            return const MapEntry(-1, '');
+          }
+        }).where((entry) => entry.key != -1),
+      );
+    }
+    return {};
+  }
 
   @override
-  void initState() {
-    super.initState();
-    processResult();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialized) return;
+    _initialized = true;
+
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args is Map && args['fromHistory'] == true) {
+      final rawAnswers = args['answers'];
+      finalAnswers = castAnswers(rawAnswers);
+      careers = List<String>.from(args['recommendedCareers'] ?? []);
+      timestamp = args['timestamp'] ?? DateTime.now();
+      setState(() => isLoading = false);
+    } else {
+      finalAnswers = widget.answers ?? {};
+      processResult();
+    }
   }
 
   Future<void> processResult() async {
-    final tagScores = scoreTags(widget.answers, sampleQuestions);
+    if (finalAnswers.isEmpty) {
+      print("❌ Final answers are empty. Cannot calculate score.");
+      setState(() {
+        careers = [];
+        isLoading = false;
+      });
+      return;
+    }
+
+    print("✅ Final Answers: $finalAnswers");
+
+    final tagScores = scoreTags(finalAnswers, sampleQuestions);
+    print("🎯 Tag Scores: $tagScores");
+
     final topCareers = recommendCareers(tagScores);
+    print("🎓 Top Careers: $topCareers");
+
     timestamp = DateTime.now();
 
-    final storedAnswers = widget.answers.entries
+    final storedAnswers = finalAnswers.entries
         .map((e) => '${e.key}:${e.value}')
         .toList();
 
     final userId = supabase.auth.currentUser?.id;
 
-    // Check if result was loaded from history
-    final fromHistory = (ModalRoute.of(context)?.settings.arguments as Map?)?['fromHistory'] == true;
-
-    if (fromHistory) {
+    if (userId == null) {
       setState(() {
         careers = topCareers;
         isLoading = false;
       });
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('⚠️ Not logged in. Result not saved.')),
+        );
+      }
       return;
     }
 
@@ -82,7 +132,9 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   void shareCareerPath() {
-    final text = 'My recommended career path: ${careers.join(', ')}';
+    final text = careers.isEmpty
+        ? 'No career path was generated.'
+        : 'My recommended career path: ${careers.join(', ')}';
     Share.share(text);
   }
 
@@ -119,7 +171,18 @@ class _ResultScreenState extends State<ResultScreen> {
           ),
           const SizedBox(height: 12),
           Expanded(
-            child: ListView.builder(
+            child: careers.isEmpty
+                ? const Center(
+              child: Text(
+                "No recommended careers found.\nPlease complete the quiz properly.",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+            )
+                : ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: careers.length,
               itemBuilder: (context, index) {
@@ -131,7 +194,8 @@ class _ResultScreenState extends State<ResultScreen> {
                   ),
                   color: AppColors.card,
                   child: ListTile(
-                    leading: const Icon(Icons.star_outline, color: AppColors.primary),
+                    leading: const Icon(Icons.star_outline,
+                        color: AppColors.primary),
                     title: Text(
                       careers[index],
                       style: const TextStyle(
@@ -145,7 +209,8 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+            padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [

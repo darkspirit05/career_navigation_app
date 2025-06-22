@@ -2,7 +2,6 @@ import 'package:ai_career_navigator/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../../core/constants.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -44,7 +43,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       if (mounted) {
         setState(() => isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load history: $e')),
+          SnackBar(content: Text('❌ Failed to load history: $e')),
         );
       }
     }
@@ -75,18 +74,38 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
-  Map<int, String> parseAnswers(List<dynamic> answers) {
-    final map = <int, String>{};
-    for (var entry in answers) {
-      final parts = (entry as String).split(':');
+  Map<int, String> parseAnswers(dynamic raw) {
+    final List<String> entries;
+    if (raw == null) return {};
+    if (raw is List) {
+      entries = List<String>.from(raw.map((e) => e.toString()));
+    } else if (raw is String) {
+      entries = [raw];
+    } else {
+      return {};
+    }
+
+    final result = <int, String>{};
+    for (var entry in entries) {
+      final parts = entry.split(':');
       if (parts.length == 2) {
         final key = int.tryParse(parts[0]);
         if (key != null) {
-          map[key] = parts[1];
+          result[key] = parts[1];
         }
       }
     }
-    return map;
+    return result;
+  }
+
+  List<String> safeListFrom(dynamic data) {
+    if (data is List) {
+      return List<String>.from(data.map((e) => e.toString()));
+    } else if (data is String) {
+      return [data];
+    } else {
+      return [];
+    }
   }
 
   @override
@@ -107,9 +126,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
         itemCount: results.length,
         itemBuilder: (context, index) {
           final result = results[index];
-          final topTags = List<String>.from(result['tags']);
+
+          final topTags = safeListFrom(result['tags']);
+          final recommendedCareers = safeListFrom(result['recommended_careers']);
           final answers = parseAnswers(result['answers']);
-          final timestamp = DateTime.parse(result['timestamp']);
+          final timestampRaw = result['timestamp'];
+
+          final timestamp = timestampRaw is String
+              ? DateTime.tryParse(timestampRaw) ?? DateTime.now()
+              : DateTime.now();
 
           return Card(
             elevation: 4,
@@ -148,8 +173,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   '/results',
                   arguments: {
                     'answers': answers,
-                    'recommendedCareers':
-                    List<String>.from(result['recommended_careers']),
+                    'recommendedCareers': recommendedCareers,
                     'timestamp': timestamp,
                     'fromHistory': true,
                   },

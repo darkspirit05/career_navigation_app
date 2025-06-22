@@ -36,7 +36,7 @@ class AppDrawer extends StatelessWidget {
               Navigator.pushReplacementNamed(context, '/history');
             },
           ),
-          const Divider(),
+          SizedBox(height: 400,),
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),

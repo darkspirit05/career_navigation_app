@@ -52,7 +52,7 @@ class _QuizScreenState extends State<QuizScreen> {
           drawer: const AppDrawer(),
           backgroundColor: AppColors.background,
           appBar: AppBar(
-            title: const Text('Career Quiz'),
+            title: const Text('Q U I Z'),
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
           ),
@@ -76,8 +76,8 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: isSubmitting ? null : _submitAnswers,
-            label: const Text("Submit"),
-            icon: const Icon(Icons.send),
+            label: const Text("Submit", style: TextStyle(color: Colors.black),),
+            icon: const Icon(Icons.send, color: Colors.black,),
             backgroundColor:
             isSubmitting ? Colors.grey : AppColors.primary,
           ),
