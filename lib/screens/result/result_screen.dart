@@ -21,8 +21,8 @@ class _ResultScreenState extends State<ResultScreen> {
   final supabase = Supabase.instance.client;
 
   List<String> careers = [];
-  DateTime timestamp = DateTime.now(); // ✅ initialized to avoid LateError
-  late Map<int, String> finalAnswers;
+  Map<int, String> finalAnswers = {};
+  DateTime? timestamp;
 
   bool isLoading = true;
   bool _initialized = false;
@@ -55,7 +55,7 @@ class _ResultScreenState extends State<ResultScreen> {
       final rawAnswers = args['answers'];
       finalAnswers = castAnswers(rawAnswers);
       careers = List<String>.from(args['recommendedCareers'] ?? []);
-      timestamp = args['timestamp'] ?? DateTime.now();
+      timestamp = args['timestamp'];
       setState(() => isLoading = false);
     } else {
       finalAnswers = widget.answers ?? {};
@@ -65,7 +65,6 @@ class _ResultScreenState extends State<ResultScreen> {
 
   Future<void> processResult() async {
     if (finalAnswers.isEmpty) {
-      print("❌ Final answers are empty. Cannot calculate score.");
       setState(() {
         careers = [];
         isLoading = false;
@@ -73,14 +72,8 @@ class _ResultScreenState extends State<ResultScreen> {
       return;
     }
 
-    print("✅ Final Answers: $finalAnswers");
-
     final tagScores = scoreTags(finalAnswers, sampleQuestions);
-    print("🎯 Tag Scores: $tagScores");
-
     final topCareers = recommendCareers(tagScores);
-    print("🎓 Top Careers: $topCareers");
-
     timestamp = DateTime.now();
 
     final storedAnswers = finalAnswers.entries
@@ -107,7 +100,7 @@ class _ResultScreenState extends State<ResultScreen> {
         'answers': storedAnswers,
         'recommended_careers': topCareers,
         'tags': tagScores.keys.take(2).toList(),
-        'timestamp': timestamp.toIso8601String(),
+        'timestamp': timestamp!.toIso8601String(),
         'user_id': userId,
       });
 
@@ -166,7 +159,7 @@ class _ResultScreenState extends State<ResultScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            "Date: ${DateFormat.yMMMd().format(timestamp)}",
+            "Date: ${DateFormat.yMMMd().format(timestamp ?? DateTime.now())}",
             style: const TextStyle(fontSize: 14, color: Colors.grey),
           ),
           const SizedBox(height: 12),
@@ -176,10 +169,7 @@ class _ResultScreenState extends State<ResultScreen> {
               child: Text(
                 "No recommended careers found.\nPlease complete the quiz properly.",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
             )
                 : ListView.builder(
@@ -209,8 +199,8 @@ class _ResultScreenState extends State<ResultScreen> {
             ),
           ),
           Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
