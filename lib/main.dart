@@ -1,3 +1,4 @@
+import 'package:ai_career_navigator/screens/career/career_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -11,14 +12,14 @@ Future<void> main() async {
 
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
-    // Optional: Send to analytics or log
     print('Flutter error: ${details.exception}');
   };
 
   try {
     await Supabase.initialize(
       url: 'https://kinbrxanwuvdewlqasgt.supabase.co',
-      anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpbmJyeGFud3V2ZGV3bHFhc2d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTI1OTUsImV4cCI6MjA2NTkyODU5NX0.ws6w_6x9-Z7EenSYa2NTl3nNd_uzqVOtp-Fo7AuVBhw',
+      anonKey:
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpbmJyeGFud3V2ZGV3bHFhc2d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNTI1OTUsImV4cCI6MjA2NTkyODU5NX0.ws6w_6x9-Z7EenSYa2NTl3nNd_uzqVOtp-Fo7AuVBhw',
     );
   } catch (e) {
     print('❌ Supabase init failed: $e');
@@ -35,7 +36,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'AI Career Navigator',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.indigo),
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+        scaffoldBackgroundColor: Colors.white,
+        useMaterial3: true,
+      ),
       home: const AuthGate(),
       onGenerateRoute: (settings) {
         switch (settings.name) {
@@ -47,7 +52,7 @@ class MyApp extends StatelessWidget {
 
           case '/results':
             return MaterialPageRoute(
-              builder: (_) => const ResultScreen(), // Reads args inside
+              builder: (_) => const ResultScreen(),
               settings: settings,
             );
 
@@ -57,6 +62,17 @@ class MyApp extends StatelessWidget {
               settings: settings,
             );
 
+          case '/careerDetail':
+            final args = settings.arguments as Map<String, dynamic>?;
+            if (args != null && args.containsKey('career')) {
+              return MaterialPageRoute(
+                builder: (_) => CareerDetailScreen(career: args['career']),
+                settings: settings,
+              );
+            } else {
+              return _errorRoute("Invalid career detail arguments.");
+            }
+
           case '/login':
             return MaterialPageRoute(
               builder: (_) => const AuthScreen(),
@@ -64,13 +80,18 @@ class MyApp extends StatelessWidget {
             );
 
           default:
-            return MaterialPageRoute(
-              builder: (_) => const Scaffold(
-                body: Center(child: Text("404 - Route not found")),
-              ),
-            );
+            return _errorRoute("404 - Route not found");
         }
       },
+    );
+  }
+
+  MaterialPageRoute _errorRoute(String message) {
+    return MaterialPageRoute(
+      builder: (_) => Scaffold(
+        appBar: AppBar(title: const Text("Error")),
+        body: Center(child: Text(message)),
+      ),
     );
   }
 }

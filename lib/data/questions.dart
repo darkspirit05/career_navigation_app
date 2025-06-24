@@ -16,4 +16,19 @@ List<Question> sampleQuestions = [
     options: ['Logically', 'Creatively', 'Emotionally', 'Physically'],
     tags: ['tech', 'creative', 'social', 'practical'],
   ),
+  Question(
+    question: 'What type of activities do you enjoy?',
+    options: ['Writing', 'Building things', 'Designing', 'Counseling'],
+    tags: ['literary', 'practical', 'creative', 'social'],
+  ),
+  Question(
+    question: 'Which tool would you prefer to use?',
+    options: ['Computer', 'Paintbrush', 'Blueprint', 'Notebook'],
+    tags: ['tech', 'creative', 'practical', 'literary'],
+  ),
+  Question(
+    question: 'What kind of challenges excite you?',
+    options: ['Technical', 'Emotional', 'Creative', 'Organizational'],
+    tags: ['tech', 'social', 'creative', 'literary'],
+  ),
 ];

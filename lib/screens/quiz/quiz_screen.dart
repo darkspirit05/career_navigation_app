@@ -25,19 +25,23 @@ class _QuizScreenState extends State<QuizScreen> {
 
     setState(() => isSubmitting = true);
 
-    // Simulate a small delay for UX smoothness
     await Future.delayed(const Duration(milliseconds: 500));
 
-    // Convert keys back to int
     final Map<int, String> intAnswers = selectedAnswers.map(
           (key, value) => MapEntry(int.parse(key), value),
     );
+
+    // 🔍 Debug print
+    print("📝 Submitting answers: $intAnswers");
 
     if (mounted) {
       Navigator.pushNamed(
         context,
         '/results',
-        arguments: intAnswers,
+        arguments: {
+          'fromHistory': false,
+          'answers': intAnswers,
+        },
       );
     }
 
@@ -76,20 +80,16 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: isSubmitting ? null : _submitAnswers,
-            label: const Text("Submit", style: TextStyle(color: Colors.black),),
-            icon: const Icon(Icons.send, color: Colors.black,),
-            backgroundColor:
-            isSubmitting ? Colors.grey : AppColors.primary,
+            label: const Text("Submit", style: TextStyle(color: Colors.black)),
+            icon: const Icon(Icons.send, color: Colors.black),
+            backgroundColor: isSubmitting ? Colors.grey : AppColors.primary,
           ),
         ),
 
-        // Loading overlay
         if (isSubmitting)
           Container(
             color: Colors.black.withOpacity(0.3),
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: const Center(child: CircularProgressIndicator()),
           ),
       ],
     );

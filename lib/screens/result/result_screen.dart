@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../data/questions.dart';
 import '../../utils/ai_engine.dart';
 import '../../core/constants.dart';
+import '../career/career_detail_screen.dart';
 
 class ResultScreen extends StatefulWidget {
   final Map<int, String>? answers;
@@ -20,9 +21,13 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> {
   final supabase = Supabase.instance.client;
 
-  List<String> careers = [];
-  Map<int, String> finalAnswers = {};
+  List<String> allCareers = [];
+  List<String> displayedCareers = [];
+  List<String> topTraitsList = [];
+  String selectedTrait = '';
+  String explanation = '';
   DateTime? timestamp;
+  late Map<int, String> finalAnswers;
 
   bool isLoading = true;
   bool _initialized = false;
@@ -32,12 +37,8 @@ class _ResultScreenState extends State<ResultScreen> {
       return Map<int, String>.fromEntries(
         input.entries.map((entry) {
           final key = int.tryParse(entry.key.toString());
-          if (key != null) {
-            return MapEntry(key, entry.value.toString());
-          } else {
-            return const MapEntry(-1, '');
-          }
-        }).where((entry) => entry.key != -1),
+          return key != null ? MapEntry(key, entry.value.toString()) : null;
+        }).whereType<MapEntry<int, String>>(),
       );
     }
     return {};
@@ -54,9 +55,17 @@ class _ResultScreenState extends State<ResultScreen> {
     if (args is Map && args['fromHistory'] == true) {
       final rawAnswers = args['answers'];
       finalAnswers = castAnswers(rawAnswers);
-      careers = List<String>.from(args['recommendedCareers'] ?? []);
-      timestamp = args['timestamp'];
+      allCareers = List<String>.from(args['recommendedCareers'] ?? []);
+      displayedCareers = [...allCareers];
+      timestamp = args['timestamp'] ?? DateTime.now();
+      final tagScores = scoreTags(finalAnswers, sampleQuestions);
+      explanation = generateExplanationFromTraits(tagScores);
+      topTraitsList = topTraits(tagScores, 2);
       setState(() => isLoading = false);
+    } else if (args is Map && args['answers'] != null) {
+      final rawAnswers = args['answers'];
+      finalAnswers = castAnswers(rawAnswers);
+      processResult();
     } else {
       finalAnswers = widget.answers ?? {};
       processResult();
@@ -65,74 +74,70 @@ class _ResultScreenState extends State<ResultScreen> {
 
   Future<void> processResult() async {
     if (finalAnswers.isEmpty) {
-      setState(() {
-        careers = [];
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
       return;
     }
 
     final tagScores = scoreTags(finalAnswers, sampleQuestions);
     final topCareers = recommendCareers(tagScores);
+
+    allCareers = topCareers;
+    displayedCareers = [...topCareers];
+    topTraitsList = topTraits(tagScores, 2);
+    explanation = generateExplanationFromTraits(tagScores);
     timestamp = DateTime.now();
 
-    final storedAnswers = finalAnswers.entries
-        .map((e) => '${e.key}:${e.value}')
-        .toList();
-
+    final storedAnswers = finalAnswers.entries.map((e) => '${e.key}:${e.value}').toList();
     final userId = supabase.auth.currentUser?.id;
 
-    if (userId == null) {
-      setState(() {
-        careers = topCareers;
-        isLoading = false;
-      });
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('⚠️ Not logged in. Result not saved.')),
-        );
-      }
-      return;
-    }
-
-    try {
-      await supabase.from('quiz_results').insert({
-        'answers': storedAnswers,
-        'recommended_careers': topCareers,
-        'tags': tagScores.keys.take(2).toList(),
-        'timestamp': timestamp!.toIso8601String(),
-        'user_id': userId,
-      });
-
-      setState(() {
-        careers = topCareers;
-        isLoading = false;
-      });
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("🎉 Career result saved successfully!")),
-        );
-      }
-    } catch (e) {
-      setState(() => isLoading = false);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('❌ Failed to save result: $e')),
-        );
+    if (userId != null) {
+      try {
+        await supabase.from('quiz_results').insert({
+          'answers': storedAnswers,
+          'recommended_careers': topCareers,
+          'tags': tagScores.keys.take(2).toList(),
+          'timestamp': timestamp!.toIso8601String(),
+          'user_id': userId,
+        });
+      } catch (e) {
+        print("❌ Supabase error: $e");
       }
     }
+
+    setState(() => isLoading = false);
+  }
+
+  void filterCareersByTrait(String trait) {
+    if (selectedTrait == trait) {
+      selectedTrait = '';
+      displayedCareers = [...allCareers];
+    } else {
+      selectedTrait = trait;
+      displayedCareers = allCareers.where((career) {
+        return career.toLowerCase().contains(trait.toLowerCase());
+      }).toList();
+    }
+    setState(() {});
   }
 
   void shareCareerPath() {
-    final text = careers.isEmpty
+    final text = displayedCareers.isEmpty
         ? 'No career path was generated.'
-        : 'My recommended career path: ${careers.join(', ')}';
+        : 'My recommended career path: ${displayedCareers.join(', ')}';
     Share.share(text);
   }
 
   void retakeQuiz() {
     Navigator.pushNamedAndRemoveUntil(context, '/quiz', (route) => false);
+  }
+
+  void openCareerDetails(String careerName) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CareerDetailScreen(career: careerName),
+      ),
+    );
   }
 
   @override
@@ -157,25 +162,54 @@ class _ResultScreenState extends State<ResultScreen> {
               color: AppColors.text,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            "Date: ${DateFormat.yMMMd().format(timestamp ?? DateTime.now())}",
-            style: const TextStyle(fontSize: 14, color: Colors.grey),
+          if (timestamp != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                "Date: ${DateFormat.yMMMd().format(timestamp!)}",
+                style: const TextStyle(fontSize: 13, color: Colors.grey),
+              ),
+            ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              explanation,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 15),
+            ),
           ),
           const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            children: topTraitsList.map((trait) {
+              final isSelected = selectedTrait == trait;
+              return FilterChip(
+                label: Text(trait),
+                selected: isSelected,
+                onSelected: (_) => filterCareersByTrait(trait),
+                selectedColor: AppColors.primary,
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : AppColors.primary,
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 10),
           Expanded(
-            child: careers.isEmpty
+            child: displayedCareers.isEmpty
                 ? const Center(
               child: Text(
-                "No recommended careers found.\nPlease complete the quiz properly.",
+                "No careers to display.\nTry retaking the quiz.",
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(color: Colors.grey),
               ),
             )
                 : ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: careers.length,
+              itemCount: displayedCareers.length,
               itemBuilder: (context, index) {
+                final career = displayedCareers[index];
                 return Card(
                   elevation: 4,
                   margin: const EdgeInsets.symmetric(vertical: 8),
@@ -187,20 +221,21 @@ class _ResultScreenState extends State<ResultScreen> {
                     leading: const Icon(Icons.star_outline,
                         color: AppColors.primary),
                     title: Text(
-                      careers[index],
+                      career,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
+                    onTap: () => openCareerDetails(career),
                   ),
                 );
               },
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 16, vertical: 12),
+            padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
