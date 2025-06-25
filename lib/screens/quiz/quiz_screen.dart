@@ -2,7 +2,6 @@ import 'package:ai_career_navigator/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import '../../data/questions.dart';
 import '../../widgets/custom_radio_tile.dart';
-import '../../core/constants.dart';
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({super.key});
@@ -24,15 +23,11 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     setState(() => isSubmitting = true);
-
     await Future.delayed(const Duration(milliseconds: 500));
 
     final Map<int, String> intAnswers = selectedAnswers.map(
           (key, value) => MapEntry(int.parse(key), value),
     );
-
-    // 🔍 Debug print
-    print("📝 Submitting answers: $intAnswers");
 
     if (mounted) {
       Navigator.pushNamed(
@@ -54,19 +49,22 @@ class _QuizScreenState extends State<QuizScreen> {
       children: [
         Scaffold(
           drawer: const AppDrawer(),
-          backgroundColor: AppColors.background,
+          backgroundColor: Theme.of(context).colorScheme.background,
           appBar: AppBar(
-            title: const Text('Q U I Z'),
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
+            title: const Text('Career Quiz'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            elevation: 2,
           ),
           body: ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 16),
             itemCount: sampleQuestions.length,
             itemBuilder: (context, index) {
               final q = sampleQuestions[index];
               final questionId = index.toString();
 
               return QuestionCard(
+                questionNumber: index + 1,
                 question: q.question,
                 options: q.options,
                 selectedOption: selectedAnswers[questionId],
@@ -78,18 +76,27 @@ class _QuizScreenState extends State<QuizScreen> {
               );
             },
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: isSubmitting ? null : _submitAnswers,
-            label: const Text("Submit", style: TextStyle(color: Colors.black)),
-            icon: const Icon(Icons.send, color: Colors.black),
-            backgroundColor: isSubmitting ? Colors.grey : AppColors.primary,
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(bottom: 12, right: 12),
+            child: FloatingActionButton.extended(
+              onPressed: isSubmitting ? null : _submitAnswers,
+              label: const Text(
+                "Submit",
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              icon: const Icon(Icons.check_circle, color: Colors.white),
+              backgroundColor: isSubmitting
+                  ? Colors.grey
+                  : Theme.of(context).colorScheme.primary,
+            ),
           ),
         ),
-
         if (isSubmitting)
           Container(
             color: Colors.black.withOpacity(0.3),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
           ),
       ],
     );
@@ -97,6 +104,7 @@ class _QuizScreenState extends State<QuizScreen> {
 }
 
 class QuestionCard extends StatelessWidget {
+  final int questionNumber;
   final String question;
   final List<String> options;
   final String? selectedOption;
@@ -104,6 +112,7 @@ class QuestionCard extends StatelessWidget {
 
   const QuestionCard({
     super.key,
+    required this.questionNumber,
     required this.question,
     required this.options,
     required this.selectedOption,
@@ -113,23 +122,23 @@ class QuestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.all(10),
-      color: AppColors.card,
+      elevation: 5,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Theme.of(context).colorScheme.surface,
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              question,
-              style: const TextStyle(
+              "Q$questionNumber. $question",
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: AppColors.text,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             ...options.map(
                   (opt) => CustomRadioTile(
                 title: opt,

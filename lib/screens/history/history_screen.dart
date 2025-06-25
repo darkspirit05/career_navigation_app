@@ -2,7 +2,6 @@ import 'package:ai_career_navigator/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/constants.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -62,7 +61,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Delete'),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -113,25 +112,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text("History"),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        title: const Text("Your Quiz History"),
+        backgroundColor: Theme.of(context).colorScheme.background,
+        foregroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : results.isEmpty
-          ? const Center(child: Text("No history found"))
+          ? const Center(
+        child: Text(
+          "No history found yet.",
+          style: TextStyle(color: Colors.grey),
+        ),
+      )
           : ListView.builder(
         padding: const EdgeInsets.all(12),
         itemCount: results.length,
         itemBuilder: (context, index) {
           final result = results[index];
-
           final topTags = safeListFrom(result['tags']);
           final recommendedCareers = safeListFrom(result['recommended_careers']);
           final answers = parseAnswers(result['answers']);
           final timestampRaw = result['timestamp'];
-
           final timestamp = timestampRaw is String
               ? DateTime.tryParse(timestampRaw) ?? DateTime.now()
               : DateTime.now();
@@ -142,22 +144,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            color: AppColors.card,
+            color: Theme.of(context).colorScheme.surface,
             child: ListTile(
               contentPadding: const EdgeInsets.all(16),
               title: Wrap(
                 spacing: 8,
-                runSpacing: 4,
                 children: topTags
                     .map((tag) => Chip(
                   label: Text(tag),
-                  backgroundColor: AppColors.primary.withOpacity(0.1),
-                  labelStyle: const TextStyle(color: AppColors.primary),
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSecondary,
+                  ),
                 ))
                     .toList(),
               ),
               subtitle: Padding(
-                padding: const EdgeInsets.only(top: 8.0),
+                padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   "Date: ${DateFormat.yMMMd().format(timestamp)}",
                   style: const TextStyle(color: Colors.grey),
@@ -179,6 +182,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   },
                 );
               },
+              onLongPress: () => deleteResult(result['id']),
             ),
           );
         },

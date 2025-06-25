@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../core/constants.dart';
 
 class CustomRadioTile extends StatelessWidget {
   final String title;
@@ -17,12 +16,40 @@ class CustomRadioTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RadioListTile(
-      activeColor: AppColors.primary,
-      title: Text(title, style: const TextStyle(fontSize: 16)),
-      value: value,
-      groupValue: groupValue,
-      onChanged: onChanged,
+    final isSelected = groupValue == value;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? colorScheme.primary.withOpacity(0.1)
+            : colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected
+              ? colorScheme.primary
+              : colorScheme.outlineVariant,
+          width: 1.4,
+        ),
+      ),
+      child: RadioListTile<String>(
+        activeColor: colorScheme.primary,
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            color: isSelected
+                ? colorScheme.onPrimaryContainer
+                : colorScheme.onSurface,
+          ),
+        ),
+        value: value,
+        groupValue: groupValue,
+        onChanged: onChanged,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 }

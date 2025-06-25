@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/constants.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -39,7 +38,7 @@ class _AuthScreenState extends State<AuthScreen> {
         await supabase.auth.signUp(
           email: email,
           password: password,
-          emailRedirectTo: 'io.supabase.flutter://login-callback/', // Only used if email confirmation is enabled
+          emailRedirectTo: 'io.supabase.flutter://login-callback/',
         );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Signup successful. Check your email to confirm.')),
@@ -52,7 +51,7 @@ class _AuthScreenState extends State<AuthScreen> {
     } on AuthException catch (e) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
-    } catch (e) {
+    } catch (_) {
       ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Unexpected error occurred")),
@@ -64,27 +63,33 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
-        title: Center(child: Text(isLogin ? 'L O G I N' : 'S I G N U P')),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        title: Text(isLogin ? 'Login' : 'Sign Up'),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
+        centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.lock_open_rounded, size: 80,),
-                SizedBox(height: 50,),
+                Icon(Icons.lock_outline_rounded, size: 80, color: theme.colorScheme.secondary),
+                const SizedBox(height: 40),
                 TextFormField(
                   controller: _emailController,
-                  decoration: const InputDecoration(labelText: 'Email'),
                   keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    prefixIcon: const Icon(Icons.email_outlined),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) return 'Enter email';
                     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
@@ -95,34 +100,48 @@ class _AuthScreenState extends State<AuthScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  decoration: const InputDecoration(labelText: 'Password'),
                   obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    prefixIcon: const Icon(Icons.lock_outline),
+                  ),
                   validator: (value) =>
                   value == null || value.length < 6 ? 'Min 6 characters' : null,
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: isLoading ? null : _authenticate,
-                    child: isLoading
+                    icon: isLoading
                         ? const SizedBox(
-                      width: 24,
-                      height: 24,
+                      width: 16,
+                      height: 16,
                       child: CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 2,
                       ),
                     )
-                        : Text(isLogin ? 'Login' : 'Sign Up'),
+                        : const Icon(Icons.arrow_forward_rounded),
+                    label: Text(isLogin ? 'Login' : 'Sign Up'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      textStyle: const TextStyle(fontSize: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
                 ),
+                const SizedBox(height: 16),
                 TextButton(
                   onPressed: () => setState(() => isLogin = !isLogin),
                   child: Text(
                     isLogin
                         ? "Don't have an account? Sign up"
                         : "Already have an account? Login",
+                    style: TextStyle(color: theme.colorScheme.secondary),
                   ),
                 ),
               ],

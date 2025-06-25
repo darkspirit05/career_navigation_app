@@ -1,6 +1,7 @@
 import '../models/question_model.dart';
 
-List<Question> sampleQuestions = [
+/// List of sample career quiz questions.
+final List<Question> sampleQuestions = [
   Question(
     question: 'What subjects do you enjoy most?',
     options: ['Math', 'Science', 'Art', 'Literature'],

@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../../../data/questions.dart';
 import '../../utils/ai_engine.dart';
-import '../../core/constants.dart';
 import '../career/career_detail_screen.dart';
 
 class ResultScreen extends StatefulWidget {
@@ -142,24 +140,26 @@ class _ResultScreenState extends State<ResultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = theme.colorScheme;
+
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text("Your Career Path"),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: color.background,
+        foregroundColor: color.inversePrimary,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
         children: [
           const SizedBox(height: 16),
-          const Text(
+          Text(
             "Recommended Careers",
-            style: TextStyle(
-              fontSize: 22,
+            style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
-              color: AppColors.text,
+              color: color.inversePrimary,
             ),
           ),
           if (timestamp != null)
@@ -167,16 +167,21 @@ class _ResultScreenState extends State<ResultScreen> {
               padding: const EdgeInsets.only(top: 4),
               child: Text(
                 "Date: ${DateFormat.yMMMd().format(timestamp!)}",
-                style: const TextStyle(fontSize: 13, color: Colors.grey),
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: Colors.grey,
+                ),
               ),
             ),
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              explanation,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 15),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Explanation", style: theme.textTheme.titleMedium),
+                const SizedBox(height: 8),
+                Text(explanation, style: theme.textTheme.bodyMedium),
+              ],
             ),
           ),
           const SizedBox(height: 12),
@@ -188,9 +193,12 @@ class _ResultScreenState extends State<ResultScreen> {
                 label: Text(trait),
                 selected: isSelected,
                 onSelected: (_) => filterCareersByTrait(trait),
-                selectedColor: AppColors.primary,
+                selectedColor: color.primaryContainer,
                 labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : AppColors.primary,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected
+                      ? color.onPrimaryContainer
+                      : color.inversePrimary,
                 ),
               );
             }).toList(),
@@ -216,15 +224,14 @@ class _ResultScreenState extends State<ResultScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  color: AppColors.card,
+                  color: color.surface,
                   child: ListTile(
-                    leading: const Icon(Icons.star_outline,
-                        color: AppColors.primary),
+                    leading: Icon(Icons.star_outline,
+                        color: color.secondary),
                     title: Text(
                       career,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     onTap: () => openCareerDetails(career),
