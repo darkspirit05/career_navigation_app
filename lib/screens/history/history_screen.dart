@@ -109,29 +109,42 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text("Your Quiz History"),
-        backgroundColor: Theme.of(context).colorScheme.background,
-        foregroundColor: Theme.of(context).colorScheme.inversePrimary,
+        centerTitle: true,
+        backgroundColor: theme.colorScheme.background,
+        foregroundColor: theme.colorScheme.inversePrimary,
+        elevation: 0,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : results.isEmpty
-          ? const Center(
-        child: Text(
-          "No history found yet.",
-          style: TextStyle(color: Colors.grey),
+          ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.history_toggle_off_rounded,
+                size: 80, color: Colors.grey.withOpacity(0.5)),
+            const SizedBox(height: 12),
+            const Text(
+              "No history found yet.",
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          ],
         ),
       )
           : ListView.builder(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(16),
         itemCount: results.length,
         itemBuilder: (context, index) {
           final result = results[index];
           final topTags = safeListFrom(result['tags']);
-          final recommendedCareers = safeListFrom(result['recommended_careers']);
+          final recommendedCareers =
+          safeListFrom(result['recommended_careers']);
           final answers = parseAnswers(result['answers']);
           final timestampRaw = result['timestamp'];
           final timestamp = timestampRaw is String
@@ -139,32 +152,38 @@ class _HistoryScreenState extends State<HistoryScreen> {
               : DateTime.now();
 
           return Card(
-            elevation: 4,
-            margin: const EdgeInsets.symmetric(vertical: 8),
+            elevation: 6,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16)),
+            color: theme.colorScheme.surface,
+            margin: const EdgeInsets.symmetric(vertical: 10),
             child: ListTile(
-              contentPadding: const EdgeInsets.all(16),
-              title: Wrap(
-                spacing: 8,
-                children: topTags
-                    .map((tag) => Chip(
-                  label: Text(tag),
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
-                  labelStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSecondary,
+              contentPadding: const EdgeInsets.all(20),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: topTags
+                        .map((tag) => Chip(
+                      label: Text(tag),
+                      backgroundColor:
+                      theme.colorScheme.secondary,
+                      labelStyle: TextStyle(
+                          color: theme.colorScheme.onSecondary),
+                    ))
+                        .toList(),
                   ),
-                ))
-                    .toList(),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  "Date: ${DateFormat.yMMMd().format(timestamp)}",
-                  style: const TextStyle(color: Colors.grey),
-                ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "📅 Date: ${DateFormat.yMMMd().format(timestamp)}",
+                    style: TextStyle(
+                      color: theme.colorScheme.outline,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
               ),
               trailing: IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red),
@@ -182,7 +201,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   },
                 );
               },
-              onLongPress: () => deleteResult(result['id']),
             ),
           );
         },

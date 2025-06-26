@@ -1,5 +1,7 @@
+import 'dart:ui';
 import 'package:ai_career_navigator/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../data/questions.dart';
 import '../../widgets/custom_radio_tile.dart';
 
@@ -45,64 +47,80 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Stack(
       children: [
         Scaffold(
           drawer: const AppDrawer(),
-          backgroundColor: Theme.of(context).colorScheme.background,
+          backgroundColor: theme.colorScheme.background,
           appBar: AppBar(
             title: const Text('Career Quiz'),
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            backgroundColor: theme.colorScheme.primary,
+            foregroundColor: theme.colorScheme.onPrimary,
             elevation: 2,
           ),
-          body: ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            itemCount: sampleQuestions.length,
-            itemBuilder: (context, index) {
-              final q = sampleQuestions[index];
-              final questionId = index.toString();
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  theme.colorScheme.primary.withOpacity(0.06),
+                  theme.colorScheme.secondary.withOpacity(0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: ListView.builder(
+              padding: const EdgeInsets.only(bottom: 80),
+              itemCount: sampleQuestions.length,
+              itemBuilder: (context, index) {
+                final q = sampleQuestions[index];
+                final questionId = index.toString();
 
-              return QuestionCard(
-                questionNumber: index + 1,
-                question: q.question,
-                options: q.options,
-                selectedOption: selectedAnswers[questionId],
-                onChanged: (value) {
-                  setState(() {
-                    selectedAnswers[questionId] = value;
-                  });
-                },
-              );
-            },
+                return Animate(
+                  delay: Duration(milliseconds: 100 * index),
+                  effects: const [FadeEffect(), SlideEffect(begin: Offset(0, 0.1))],
+                  child: QuestionCard(
+                    questionNumber: index + 1,
+                    question: q.question,
+                    options: q.options,
+                    selectedOption: selectedAnswers[questionId],
+                    onChanged: (value) {
+                      setState(() {
+                        selectedAnswers[questionId] = value;
+                      });
+                    },
+                  ),
+                );
+              },
+            ),
           ),
           floatingActionButton: Padding(
-            padding: const EdgeInsets.only(bottom: 12, right: 12),
+            padding: const EdgeInsets.only(right: 12, bottom: 12),
             child: FloatingActionButton.extended(
               onPressed: isSubmitting ? null : _submitAnswers,
-              label: const Text(
-                "Submit",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              icon: const Icon(Icons.check_circle),
+              label: Text(
+                isSubmitting ? "Submitting..." : "Submit",
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              icon: const Icon(Icons.check_circle, color: Colors.white),
-              backgroundColor: isSubmitting
-                  ? Colors.grey
-                  : Theme.of(context).colorScheme.primary,
+              backgroundColor:
+              isSubmitting ? Colors.grey : theme.colorScheme.primary,
+              foregroundColor: Colors.white,
+              elevation: 6,
             ),
           ),
         ),
         if (isSubmitting)
           Container(
             color: Colors.black.withOpacity(0.3),
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: const Center(child: CircularProgressIndicator()),
           ),
       ],
     );
   }
 }
-
 class QuestionCard extends StatelessWidget {
   final int questionNumber;
   final String question;
@@ -121,33 +139,44 @@ class QuestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: Theme.of(context).colorScheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Q$questionNumber. $question",
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+    final theme = Theme.of(context);
+    final color = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            decoration: BoxDecoration(
+              color: color.surface.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: color.outlineVariant.withOpacity(0.3)),
             ),
-            const SizedBox(height: 10),
-            ...options.map(
-                  (opt) => CustomRadioTile(
-                title: opt,
-                value: opt,
-                groupValue: selectedOption,
-                onChanged: (value) => onChanged(value!),
-              ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Q$questionNumber. $question",
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ...options.map(
+                      (opt) => CustomRadioTile(
+                    title: opt,
+                    value: opt,
+                    groupValue: selectedOption,
+                    onChanged: (value) => onChanged(value!),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

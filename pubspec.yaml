@@ -1,6 +1,6 @@
 name: ai_career_navigator
 description: "AI-powered career path suggestion app using Flutter & Supabase."
-publish_to: 'none' # This is a private app
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
@@ -19,6 +19,11 @@ dependencies:
   provider: ^6.1.5
   http: ^1.4.0
 
+  # 🎨 UI + Animation
+  lottie: ^3.3.1
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -29,13 +34,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
   assets:
     - assets/icons/app_icon.png
-
-flutter_native_splash:
-  color: "#ffffff"
-  image: assets/icons/app_icon.png
-  android: true
-  ios: true
-  android_gravity: center
-  ios_content_mode: center
+    - assets/auth.json  # ✅ Lottie animation file

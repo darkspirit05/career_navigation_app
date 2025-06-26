@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:ai_career_navigator/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
@@ -152,114 +153,145 @@ class _ResultScreenState extends State<ResultScreen> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-        children: [
-          const SizedBox(height: 16),
-          Text(
-            "Recommended Careers",
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color.inversePrimary,
-            ),
+          : Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              color.primary.withOpacity(0.05),
+              color.secondary.withOpacity(0.03),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          if (timestamp != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                "Date: ${DateFormat.yMMMd().format(timestamp!)}",
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Explanation", style: theme.textTheme.titleMedium),
-                const SizedBox(height: 8),
-                Text(explanation, style: theme.textTheme.bodyMedium),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            children: topTraitsList.map((trait) {
-              final isSelected = selectedTrait == trait;
-              return FilterChip(
-                label: Text(trait),
-                selected: isSelected,
-                onSelected: (_) => filterCareersByTrait(trait),
-                selectedColor: color.primaryContainer,
-                labelStyle: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  color: isSelected
-                      ? color.onPrimaryContainer
-                      : color.inversePrimary,
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: displayedCareers.isEmpty
-                ? const Center(
-              child: Text(
-                "No careers to display.\nTry retaking the quiz.",
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey),
-              ),
-            )
-                : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: displayedCareers.length,
-              itemBuilder: (context, index) {
-                final career = displayedCareers[index];
-                return Card(
-                  elevation: 4,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+        ),
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  Text(
+                    "Your Recommended Careers",
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: color.inversePrimary,
+                    ),
                   ),
-                  color: color.surface,
-                  child: ListTile(
-                    leading: Icon(Icons.star_outline,
-                        color: color.secondary),
-                    title: Text(
-                      career,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
+                  if (timestamp != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4, bottom: 12),
+                      child: Text(
+                        "Date: ${DateFormat.yMMMd().format(timestamp!)}",
+                        style: theme.textTheme.labelSmall?.copyWith(color: Colors.grey),
                       ),
                     ),
-                    onTap: () => openCareerDetails(career),
+                  const SizedBox(height: 8),
+                  Text(
+                    "🧠 Why these careers?",
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: color.primary,
+                    ),
                   ),
-                );
-              },
+                  const SizedBox(height: 6),
+                  Text(
+                    "• ${explanation.replaceAll('. ', '.\n• ')}",
+                    style: theme.textTheme.bodyMedium?.copyWith(height: 1.4),
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: topTraitsList.map((trait) {
+                      final isSelected = selectedTrait == trait;
+                      return FilterChip(
+                        label: Text(trait),
+                        selected: isSelected,
+                        onSelected: (_) => filterCareersByTrait(trait),
+                        selectedColor: color.primaryContainer,
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: isSelected
+                              ? color.onPrimaryContainer
+                              : color.inversePrimary,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ]),
+              ),
             ),
-          ),
-          Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: shareCareerPath,
-                  icon: const Icon(Icons.share),
-                  label: const Text('Share'),
+            displayedCareers.isEmpty
+                ? SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
+                child: Text(
+                  "No careers to display.\nTry retaking the quiz.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey.shade600),
                 ),
-                ElevatedButton.icon(
-                  onPressed: retakeQuiz,
-                  icon: const Icon(Icons.replay),
-                  label: const Text('Retake Quiz'),
-                ),
-              ],
+              ),
+            )
+                : SliverList(
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                  final career = displayedCareers[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: color.surface.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: color.outlineVariant.withOpacity(0.25),
+                            ),
+                          ),
+                          child: ListTile(
+                            leading: Icon(Icons.star_border, color: color.secondary),
+                            title: Text(
+                              career,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: color.onSurface,
+                              ),
+                            ),
+                            onTap: () => openCareerDetails(career),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                childCount: displayedCareers.length,
+              ),
             ),
-          ),
-        ],
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: shareCareerPath,
+                      icon: const Icon(Icons.share, color: Colors.white,),
+                      label: const Text('Share'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: retakeQuiz,
+                      icon: const Icon(Icons.replay, color: Colors.white,),
+                      label: const Text('Retake Quiz'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

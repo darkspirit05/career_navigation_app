@@ -8,60 +8,119 @@ class CareerDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final details = _careerDetails[career];
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(career),
-        backgroundColor: Theme.of(context).colorScheme.secondary,
-        foregroundColor: Theme.of(context).colorScheme.onSecondary,
-      ),
       body: details == null
           ? const Center(child: Text("Details not available"))
-          : SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _sectionTitle(context, "📝 Description"),
-            _sectionContent(details['description'] ?? ''),
+          : CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 180,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(career),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      theme.colorScheme.primary,
+                      theme.colorScheme.secondary,
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+              ),
+            ),
+            backgroundColor: theme.colorScheme.primary,
+            foregroundColor: theme.colorScheme.onPrimary,
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white10 : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle(context, "📝 Description"),
+                      _sectionContent(details['description'] ?? ''),
 
-            const SizedBox(height: 20),
-            _sectionTitle(context, "🛠 Skills Required"),
-            ..._buildBulletList(details['skills']),
+                      const SizedBox(height: 24),
+                      _sectionTitle(context, "🛠 Skills Required"),
+                      ..._buildBulletList(details['skills']),
 
-            const SizedBox(height: 20),
-            _sectionTitle(context, "📚 Recommended Courses"),
-            ..._buildBulletList(details['courses']),
-          ],
-        ),
+                      const SizedBox(height: 24),
+                      _sectionTitle(context, "📚 Recommended Courses"),
+                      ..._buildBulletList(details['courses']),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          )
+        ],
       ),
     );
   }
 
   Widget _sectionTitle(BuildContext context, String title) {
-    return Text(
-      title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.inversePrimary,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.inversePrimary,
+        ),
       ),
     );
   }
 
   Widget _sectionContent(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Text(text, style: const TextStyle(fontSize: 16)),
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 16, height: 1.5),
     );
   }
 
   List<Widget> _buildBulletList(List<dynamic>? items) {
-    if (items == null || items.isEmpty) return [const Text("No data available.")];
+    if (items == null || items.isEmpty) {
+      return [
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 4.0),
+          child: Text("• No data available.", style: TextStyle(fontSize: 15)),
+        ),
+      ];
+    }
 
     return items.map((item) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 4.0),
-        child: Text("• $item", style: const TextStyle(fontSize: 15)),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("• ", style: TextStyle(fontSize: 15)),
+            Expanded(
+              child: Text(item, style: const TextStyle(fontSize: 15)),
+            ),
+          ],
+        ),
       );
     }).toList();
   }
@@ -145,3 +204,4 @@ const Map<String, Map<String, dynamic>> _careerDetails = {
     'courses': ['HubSpot Content Strategy', 'Google Digital Garage'],
   },
 };
+
