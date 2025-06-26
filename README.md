@@ -1,96 +1,111 @@
-# 🎯 AI Career Navigator — Day 1
+<p align="center">
+  <img src="assets/icons/app_icon.png" alt="App Icon" width="120" />
+</p>
 
-An intelligent mobile app that helps students discover their ideal career path through an interactive AI-powered quiz.
+# 🚀 AI Career Navigator
 
----
-
-## ✅ Day 1 Progress: Quiz System UI
-
-### 📱 Features Implemented:
-- Clean folder architecture using **Flutter**
-- Custom UI for career quiz using `RadioListTile`
-- **3 multiple-choice questions** pulled from static data
-- Stores selected answers in a `Map`
-- Navigates to a result screen on successful quiz submission
-- Shows quiz responses on result screen (AI analysis coming next)
-- Modern theming with **custom colors** and **components**
+**AI-powered Career Path Suggestion App**  
+Built with Flutter & Supabase — Glassmorphic UI, skill-based quiz, save/share results.
 
 ---
 
-### 🗂️ Folder Structure
+## ✨ Features
+
+- **🧠 AI-driven quiz** evaluates your traits & matches 100+ career paths.
+- **Glassmorphic design** with elegant blur, frosted cards, and modern colors.
+- **Supabase Auth** — Email signup/login & secure result history.
+- **Detailed results**—career options with explanations & trait filtering.
+- **Save & share** your career path as text or screenshot.
+
+---
+
+## 🎨 Preview
+
+<p align="center">
+  <img src="docs/quiz_screen.png" alt="Quiz Screen" width="300" />
+  <img src="docs/result_screen.png" alt="Result Screen" width="300" />
+</p>
+
+<p align="center">
+  <img src="docs/splash.gif" alt="Splash Animation" width="400" />
+</p>
+
+---
+
+## 🛠️ Getting Started
+
+### Requirements
+- Flutter 3.10+
+- Dart 3.6+
+- Supabase account & project
+
+### Installation
 
 ```bash
-lib/
-├── main.dart                  # App entry point
-├── core/
-│   └── constants.dart         # App-wide colors and styles
-├── models/
-│   └── question_model.dart    # Question model class
-├── screens/
-│   ├── quiz/
-│   │   └── quiz_screen.dart   # Quiz UI with radio buttons
-│   └── result/
-│       └── result_screen.dart # Placeholder result page
-├── widgets/
-│   └── custom_radio_tile.dart # Styled reusable radio tile
-├── data/
-│   └── questions.dart         # Static quiz questions
+# Clone the repo
+git clone https://github.com/rly09/ai_career_navigator.git
+cd ai_career_navigator
 
+# Install dependencies
+flutter pub get
+
+# Run the app
+flutter run
 ```
 
-# 🎯 AI Career Navigator — Day 2
+📝 Setup Configuration
+Supabase
+Create a project and add client credentials in .env or initialize via SupabaseFlutter.initialize(...).
 
-An AI-powered career guidance app built with Flutter.  
-Day 2 adds logic to intelligently suggest careers based on a user’s personality, preferences, and quiz answers.
+Assets
 
----
+assets/auth.json for Lottie animations
 
-## ✅ Day 2 Progress: Smart Career Analysis with AI Logic
+assets/icons/app_icon.png for splash and launcher icon
 
-### 📌 What's New
-- Tags like `tech`, `creative`, `social`, etc., added to quiz answers
-- An AI scoring system that tallies up user preferences
-- A rule-based engine recommends careers based on highest scoring traits
-- Clean & beautiful result UI with suggested career cards
-- Modular, extensible code structure
+Runner (Android/iOS)
+After running splash & icon commands, ensure appropriate files are updated in android/ and ios/ folders.
 
----
+💼 Usage
+Sign Up / Log In
 
-### 📊 How AI Logic Works
+Take the AI quiz — choose options that match your interests
 
-1. **Tag Matching**  
-   Each answer is tagged (e.g., “Math” → `tech`, “Art” → `creative`).
+View Recommended Careers with explanations and traits
 
-2. **Scoring**  
-   The system counts how many times each tag appears in selected answers.
+Tap a career card to see detailed info
 
-3. **Career Mapping**  
-   Top tags are mapped to relevant careers like:
+Share or revisit results via History, powered by Supabase
 
-   | Tag       | Suggested Careers                  |
-      |-----------|------------------------------------|
-   | `tech`    | Software Developer, Data Scientist |
-   | `creative`| UI/UX Designer, Animator           |
-   | `social`  | Teacher, Psychologist              |
-   | `literary`| Writer, Editor                     |
-   | `practical`| Engineer, Technician              |
+🔧 Technologies Used
+Feature	Tool / Package
+UI & Animations	Flutter, flutter_animate, Lottie
+Data & Auth	Supabase, http
+Local Storage	Isar
+State Management	Provider
+Share Functionality	share_plus
+Internationalization	intl
 
-4. **Result Screen**  
-   Displays top 2–4 suggested careers using clean UI cards.
+🎯 Contributing
+Your ideas are welcome!
 
----
+Fork the repo
 
-### 🧠 Folder Additions
+Create a feature branch (git checkout -b feature/…)
 
-```bash
-lib/
-├── utils/
-│   └── ai_engine.dart          # AI logic: scoring + recommendation
-├── data/
-│   └── questions.dart          # Updated with tags
-├── models/
-│   └── question_model.dart     # Now includes tag list
-└── screens/
-    └── result/
-        └── result_screen.dart  # Intelligent suggestions + new UI
-```
+Commit your changes (git commit -m "feat: add …")
+
+Push (git push origin feature/…)
+
+Open a Pull Request
+
+📝 License
+MIT © [Your Name]
+
+📲 Contact
+Have questions or feedback?
+
+Email: your.email@example.com
+
+Twitter: @yourhandle
+
