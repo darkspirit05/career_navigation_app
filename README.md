@@ -22,8 +22,10 @@ Built with Flutter & Supabase — Glassmorphic UI, skill-based quiz, save/share 
 ## 🎨 Preview
 
 <p align="center">
-  <img src="docs/quiz_screen.png" alt="Quiz Screen" width="300" />
-  <img src="docs/result_screen.png" alt="Result Screen" width="300" />
+  <img src="docs/signup_screen.jpg" alt="SignUp Screen" width="300" />
+  <img src="docs/login_screen.jpg" alt="Login Screen" width="300" />
+  <img src="docs/quiz_screen.jpg" alt="Quiz Screen" width="300" />
+  <img src="docs/result_screen.jpg" alt="Result Screen" width="300" />
 </p>
 
 <p align="center">
