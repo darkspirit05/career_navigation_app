@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icons/app_icon.png" alt="AI Career Navigator Logo" width="120"/>
+  <img src="assets/icons/icon.png" alt="AI Career Navigator Logo" width="120"/>
 </p>
 
 <h1 align="center">🚀 AI Career Navigator</h1>
