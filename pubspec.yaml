@@ -1,4 +1,4 @@
-name: ai_career_navigator
+name: CareerVerse
 description: "AI-powered career path suggestion app using Flutter & Supabase."
 publish_to: 'none'
 version: 1.0.0+1

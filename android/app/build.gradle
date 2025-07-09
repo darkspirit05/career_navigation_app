@@ -10,7 +10,7 @@ android {
     ndkVersion = flutter.ndkVersion
 
     defaultConfig {
-        applicationId = "com.example.ai_career_navigator"
+        applicationId = "com.example.CareerVerse"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

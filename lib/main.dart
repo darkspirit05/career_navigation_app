@@ -1,5 +1,5 @@
-import 'package:ai_career_navigator/screens/career/career_detail_screen.dart';
-import 'package:ai_career_navigator/theme/theme_provider.dart';
+import 'package:CareerVerse/screens/career/career_detail_screen.dart';
+import 'package:CareerVerse/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';

@@ -2,7 +2,7 @@
   <img src="assets/icons/icon.png" alt="AI Career Navigator Logo" width="120"/>
 </p>
 
-<h1 align="center">🚀 AI Career Navigator</h1>
+<h1 align="center">🚀 CareerVerse</h1>
 
 <p align="center">
   <b>AI-powered Career Path Suggestion App</b><br>

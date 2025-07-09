@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:ai_career_navigator/widgets/app_drawer.dart';
+import 'package:CareerVerse/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';

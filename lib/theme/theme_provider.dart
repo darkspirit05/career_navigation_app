@@ -1,5 +1,6 @@
+import 'package:CareerVerse/theme/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:ai_career_navigator/theme/theme.dart';
+
 
 class ThemeProvider with ChangeNotifier {
   /// Initialize with system-based theme or default to light
